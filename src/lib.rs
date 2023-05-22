@@ -5,37 +5,31 @@ use std::path::Path;
 use crossterm::style::Stylize;
 
 use tracing::subscriber::Subscriber;
-use tracing::{Event, Level};
+use tracing::Event;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling;
 use tracing_log::NormalizeEvent;
 use tracing_subscriber::{
+    filter::EnvFilter,
     fmt::{format::Writer, FmtContext, FormatEvent, FormatFields},
     registry::LookupSpan,
 };
 
-pub fn tailog() -> Option<WorkerGuard> {
+pub type Guard = WorkerGuard;
+
+#[must_use]
+pub fn init() -> Option<Guard> {
     let log_dir = match env::var("TAILOG_DIR") {
         Ok(dir) => Path::new(&dir).to_path_buf(),
         Err(_) => Path::new(".").to_path_buf(),
     };
-    let default_level = Level::INFO;
+    //let default_level = Level::INFO;
     let file_appender = rolling::never(log_dir, String::from("log.txt"));
     let (log_writer, guard) = tracing_appender::non_blocking(file_appender);
 
     tracing_subscriber::fmt()
-        .with_max_level(match env::var("RUST_LOG") {
-            Ok(level) => match level.as_str() {
-                "info" | "INFO" => Level::INFO,
-                "warn" | "WARN" => Level::WARN,
-                "error" | "ERROR" => Level::ERROR,
-                "debug" | "DEBUG" => Level::DEBUG,
-                "trace" | "TRACE" => Level::TRACE,
-                _ => default_level,
-            },
-            _ => default_level,
-        })
-        .with_writer(log_writer)
+        //.with_writer(log_writer)
+        .with_env_filter(EnvFilter::from_default_env())
         .event_format(SimpleFmt)
         .try_init()
         .ok();
