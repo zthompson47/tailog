@@ -2,7 +2,8 @@ use std::env;
 use std::fmt::Error;
 use std::path::Path;
 
-use crossterm::style::Stylize;
+//use crossterm::style::Stylize;
+use owo_colors::OwoColorize;
 
 use tracing::subscriber::Subscriber;
 use tracing::Event;
@@ -25,7 +26,7 @@ pub fn init() -> Option<Guard> {
     };
     //let default_level = Level::INFO;
     let file_appender = rolling::never(log_dir, String::from("log.txt"));
-    let (log_writer, guard) = tracing_appender::non_blocking(file_appender);
+    let (_log_writer, guard) = tracing_appender::non_blocking(file_appender);
 
     tracing_subscriber::fmt()
         //.with_writer(log_writer)
@@ -57,7 +58,7 @@ where
         let meta = normalized_meta.as_ref().unwrap_or_else(|| event.metadata());
         let message = format!(
             "{} {} {}{}{} ",
-            time_now.grey(),
+            time_now.purple(),
             meta.level().to_string().blue(),
             meta.file().unwrap_or("").to_string().yellow(),
             String::from(":").yellow(),
